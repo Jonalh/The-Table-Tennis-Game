@@ -21,6 +21,8 @@ class TableTennis extends HTMLElement {
     this.serve = true;
     this.serveCount = 0;
 
+    this.song = new Audio("./assets/song.mp3");
+
     this.render();
   }
 
@@ -37,6 +39,12 @@ class TableTennis extends HTMLElement {
     startButton.addEventListener("click", (e) => {
       // Assign player names based on field input
       e.preventDefault();
+
+      this.song.play();
+
+      const startSound = new Audio("./assets/start.mp3");
+      startSound.play();
+
       this.player1 = this.shadowRoot.querySelector("#player1input").value;
       this.player2 = this.shadowRoot.querySelector("#player2input").value;
       this.loadingNames = false;
@@ -59,9 +67,14 @@ class TableTennis extends HTMLElement {
   render() {
     if (this.loadingNames) {
       this.shadowRoot.querySelector(".game").style.display = "none";
+      this.shadowRoot.querySelector("#logo").style.display = "block";
       this.shadowRoot.querySelector(".enterNames").style.display = "block";
+
+      const initSound = new Audio("./assets/init.mp3");
+      initSound.play();
     } else {
       this.shadowRoot.querySelector(".game").style.display = "block";
+      this.shadowRoot.querySelector("#logo").style.display = "none";
       this.shadowRoot.querySelector(".enterNames").style.display = "none";
     }
 
@@ -96,19 +109,25 @@ class TableTennis extends HTMLElement {
   //
   // Increments point every time side is clicked
   incrementSide(side) {
+    const hitSound = new Audio("./assets/Recording.m4a");
+    hitSound.play();
     side === "side1" ? this.side1Count++ : this.side2Count++;
     this.render();
   }
 
   // First to 11
   handleScores() {
+    const gameSound = new Audio("./assets/game.mp3");
+
     if (this.side1Count < 10 || this.side2Count < 10) {
       if (this.side1Count >= 11) {
         this.init();
         this.side1Games++;
+        gameSound.play();
       } else if (this.side2Count >= 11) {
         this.init();
         this.side2Games++;
+        gameSound.play();
       }
     }
 
@@ -117,9 +136,11 @@ class TableTennis extends HTMLElement {
       if (this.side1Count - this.side2Count === 2) {
         this.init();
         this.side1Games++;
+        gameSound.play();
       } else if (this.side2Count - this.side1Count === 2) {
         this.init();
         this.side2Games++;
+        gameSound.play();
       }
     }
   }
@@ -134,21 +155,21 @@ class TableTennis extends HTMLElement {
     }
 
     if (this.serve) {
-      this.shadowRoot.querySelector("#serve1").innerHTML = "Serve";
-      this.shadowRoot.querySelector("#serve2").innerHTML = "";
+      this.shadowRoot.querySelector("#racket1").style.opacity = 1;
+      this.shadowRoot.querySelector("#racket2").style.opacity = 0;
     } else {
-      this.shadowRoot.querySelector("#serve2").innerHTML = "Serve";
-      this.shadowRoot.querySelector("#serve1").innerHTML = "";
+      this.shadowRoot.querySelector("#racket1").style.opacity = 0;
+      this.shadowRoot.querySelector("#racket2").style.opacity = 1;
     }
   }
 
   // Checks who won best out of 5
   handleWin() {
     if (this.side1Games >= 3) {
-      alert("Player 1 won!");
+      alert(`${this.player1} won!`);
       this.reset();
     } else if (this.side2Games >= 3) {
-      alert("Player 2 won!");
+      alert(`${this.player2} won!`);
       this.reset();
     }
   }
@@ -168,6 +189,8 @@ class TableTennis extends HTMLElement {
     this.side2Games = 0;
     this.loadingNames = true;
     this.render();
+    this.song.pause();
+    this.song.currentTime = 0;
   }
 }
 
@@ -175,20 +198,23 @@ class TableTennis extends HTMLElement {
 const template = document.createElement("template");
 
 template.innerHTML = `
+<img id="logo" src="./assets/logo.png"></img>
 <div class="enterNames">
-    <h1>The table tennis game</h1>
-    <p>Enter player names</p>
+    <div class="container">
     <form>
-        <input id="player1input" type="text" placeholder="Player 1" value="Player 1"></input>
-        <input id="player2input" type="text" placeholder="Player 2" value="Player 2"></input>
+        <div class="inputDiv">
+          <input id="player1input" type="text" value="Player 1"></input>
+          <input id="player2input" type="text" value="Player 2"></input>
+        </div>
         <button id="start">Start game</button>
     </form>
+    </div>
 </div>
 
 <div class="game">
     <div class="serve">
-        <p id="serve1">Serve</p>
-        <p id="serve2"></p>
+        <img id="racket1" src="./assets/racket.svg"></img>
+        <img id="racket2" src="./assets/racket.svg"></img>
         <p id="player1"></p>
         <p id="player2"></p>
     </div>
@@ -213,13 +239,80 @@ template.innerHTML = `
 
     * {
         font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    input:focus{
+      outline: none;
+    }
+
+    #logo {
+      max-width: 100%;
+      pointer-events: none;
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE 10 and IE 11 */
+      user-select: none; /* Standard syntax */
+    }
+
+    .enterNames h1, p {
+      margin-bottom: 32px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .inputDiv {
+      display: flex;
+      gap: 32px;
+      width: 400px;
+      justify-content: space-between;
+    }
+
+    #start {
+      width: 400px;
+      height: 50px;
+      background-color: #B6EADA;
+      border: none; 
+      color: #03001C;
+      border-radius: 10px;
+      font-size: 1.5rem;
+      padding: 0 20px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    form input { 
+      width: 100%;
+      height: 50px;
+      background-color: #ffffff;
+      border: none; 
+      color: #301E67;
+      border-radius: 10px;
+      font-size: 1.5rem;
+      padding: 0 20px;
+      margin-bottom: 32px;
     }
 
     .serve {
         color: #ffffff;
         display: grid;
+        place-items: center;
         grid-template-columns: 1fr 1fr;
         width: 600px;
+    }
+
+    .serve p {
+      font-size: 1.5rem;
+    }
+
+    .serve img {
+      width: 64px;
+      margin-bottom: 32px;
     }
 
     .table {
@@ -227,6 +320,7 @@ template.innerHTML = `
         height: 300px;
         display: grid;
         grid-template-columns: 1fr 1fr;
+        margin-bottom: 32px;
     }
 
     .side {
@@ -238,6 +332,7 @@ template.innerHTML = `
         -webkit-user-select: none; /* Safari */
         -ms-user-select: none; /* IE 10 and IE 11 */
         user-select: none; /* Standard syntax */
+        cursor: pointer;
     }
 
     #side1 {
@@ -264,19 +359,21 @@ template.innerHTML = `
     }
 
     .resetDiv {
-        margin-top: 60px;
         display: grid;
         place-items: center;
     }
 
     #reset {
-        width: 200px;
-        height: 50px;
-        background-color: #301E67;
-        border: none; 
-        color: #ffffff;
-        border-radius: 10px;
-        font-size: 1.5rem;
+      width: 400px;
+      height: 50px;
+      background-color: #B6EADA;
+      border: none; 
+      color: #03001C;
+      border-radius: 10px;
+      font-size: 1.5rem;
+      padding: 0 20px;
+      cursor: pointer;
+      font-weight: 600;
     }
 
     #reset:hover {
